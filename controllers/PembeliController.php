@@ -31,7 +31,8 @@ if (isset($_POST['tambah'])) {
         redirect('/admin/superadmin/pembeli.php?error=duplikat');
     }
 
-    mysqli_query($conn,
+    mysqli_query(
+        $conn,
         "INSERT INTO users (nik,username,email,alamat,password,role,status)
          VALUES ('$nik','$username','$email','$alamat','$password','pembeli','offline')"
     );
@@ -56,7 +57,8 @@ if (isset($_POST['edit'])) {
     }
 
     // CEK DUPLIKAT (KECUALI DIRI SENDIRI)
-    $cek = mysqli_query($conn,
+    $cek = mysqli_query(
+        $conn,
         "SELECT id FROM users 
          WHERE (email='$email' OR nik='$nik') 
          AND id!='$id'"
@@ -66,7 +68,8 @@ if (isset($_POST['edit'])) {
         redirect('/admin/superadmin/pembeli.php?error=duplikat');
     }
 
-    mysqli_query($conn,
+    mysqli_query(
+        $conn,
         "UPDATE users SET
             nik='$nik',
             username='$username',
@@ -85,7 +88,8 @@ if (isset($_GET['hapus'])) {
 
     $id = $_GET['hapus'];
 
-    mysqli_query($conn,
+    mysqli_query(
+        $conn,
         "DELETE FROM users WHERE id='$id' AND role='pembeli'"
     );
 
