@@ -6,25 +6,22 @@ require_once '../../config/session.php';
 check_role('superadmin');
 
 // --- LOGIKA SEARCH & PAGINATION ---
-$limit = 25; // Data per halaman
+$limit = 25;
 $halaman = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
 $halaman_awal = ($halaman > 1) ? ($halaman * $limit) - $limit : 0;
 
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
 
-// Query Dasar dengan Filter Search
 $where_clause = "WHERE role='pembeli'";
 if (!empty($search)) {
     $where_clause .= " AND (username LIKE '%$search%' OR email LIKE '%$search%' OR nik LIKE '%$search%')";
 }
 
-// Hitung total data untuk pagination
 $total_data_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM users $where_clause");
 $total_res = mysqli_fetch_assoc($total_data_query);
 $total_data = $total_res['total'];
 $total_halaman = ceil($total_data / $limit);
 
-// Ambil data dengan LIMIT dan OFFSET
 $pembeli = mysqli_query(
     $conn,
     "SELECT id, username, email, alamat, status, nik 
@@ -52,7 +49,6 @@ $pembeli = mysqli_query(
 </head>
 
 <body class="antialiased overflow-x-hidden">
-
     <div class="blob" style="top: 20%; right: 10%; background: #6366f1;"></div>
     <div class="blob" style="bottom: 5%; left: 15%; background: #0891b2;"></div>
 
@@ -60,7 +56,7 @@ $pembeli = mysqli_query(
         <?php include __DIR__ . '../../../partials/sidebar-superadmin.php'; ?>
 
         <main class="flex-1 p-8 lg:p-12">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-6">
                 <div>
                     <h1 class="text-4xl font-black tracking-tighter italic uppercase">
                         Customer <span class="text-indigo-400">Database</span>
@@ -71,8 +67,8 @@ $pembeli = mysqli_query(
                 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                     <form action="" method="GET" class="relative group">
                         <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" 
-                            placeholder="Search Name, Email, or NIK..." 
-                            class="w-full sm:w-64 bg-white/5 border border-white/10 rounded-2xl py-3 px-5 pl-12 focus:outline-none focus:border-indigo-500 text-xs font-bold transition-all group-hover:bg-white/10">
+                            placeholder="Search Name, Email..." 
+                            class="w-full sm:w-64 bg-white/5 border border-white/10 rounded-2xl py-3 px-5 pl-12 focus:outline-none focus:border-indigo-500 text-xs font-bold transition-all group-hover:bg-white/10 text-white">
                         <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </form>
 
@@ -83,6 +79,34 @@ $pembeli = mysqli_query(
                     </button>
                 </div>
             </div>
+
+            <?php if (isset($_GET['error']) || isset($_GET['success'])): ?>
+            <div class="mb-6">
+                <?php 
+                $msg = ""; $color = "";
+                if (isset($_GET['error'])) {
+                    $color = "red";
+                    switch ($_GET['error']) {
+                        case 'email_exists': $msg = "Email sudah digunakan."; break;
+                        case 'nik_exists':   $msg = "NIK sudah terdaftar."; break;
+                        case 'active_user':  $msg = "Gagal! Pembeli sedang aktif/online."; break;
+                        default: $msg = "Terjadi kesalahan.";
+                    }
+                } else {
+                    $color = "emerald";
+                    switch ($_GET['success']) {
+                        case 'tambah': $msg = "Pembeli berhasil ditambahkan."; break;
+                        case 'edit':   $msg = "Data pembeli diperbarui."; break;
+                        case 'hapus':  $msg = "Data telah dihapus."; break;
+                    }
+                }
+                ?>
+                <div class="bg-<?= $color ?>-500/10 border border-<?= $color ?>-500/20 text-<?= $color ?>-400 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest italic flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-<?= $color ?>-500 animate-pulse"></div>
+                    <?= $msg ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <div class="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl">
                 <table class="w-full text-left border-collapse">
@@ -110,14 +134,10 @@ $pembeli = mysqli_query(
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="p-6">
-                                        <span class="text-gray-400 font-mono text-xs"><?= $row['nik'] ? htmlspecialchars($row['nik']) : '-' ?></span>
-                                    </td>
-                                    <td class="p-6">
-                                        <span class="text-indigo-300/70 font-mono text-sm"><?= htmlspecialchars($row['email']) ?></span>
-                                    </td>
+                                    <td class="p-6 text-gray-400 font-mono text-xs"><?= $row['nik'] ?: '-' ?></td>
+                                    <td class="p-6 text-indigo-300/70 font-mono text-sm"><?= htmlspecialchars($row['email']) ?></td>
                                     <td class="p-6 text-center">
-                                        <span class="px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-full <?= $row['status'] === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/10' ?>">
+                                        <span class="px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-full <?= $row['status'] === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-gray-500' ?>">
                                             <?= $row['status'] ?>
                                         </span>
                                     </td>
@@ -148,57 +168,104 @@ $pembeli = mysqli_query(
                 <?php if ($halaman > 1): ?>
                     <a href="?halaman=<?= $halaman - 1 ?>&search=<?= $search ?>" class="px-4 py-2 glass-card rounded-xl text-[10px] font-black uppercase hover:bg-indigo-600 transition-all italic">Prev</a>
                 <?php endif; ?>
-
-                <div class="flex gap-1">
-                    <?php for ($x = 1; $x <= $total_halaman; $x++): ?>
-                        <a href="?halaman=<?= $x ?>&search=<?= $search ?>" 
-                           class="w-10 h-10 flex items-center justify-center rounded-xl text-[10px] font-black transition-all <?= ($halaman == $x) ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'glass-card text-gray-500 hover:text-white' ?>">
-                            <?= $x ?>
-                        </a>
-                    <?php endfor; ?>
-                </div>
-
+                <?php for ($x = 1; $x <= $total_halaman; $x++): ?>
+                    <a href="?halaman=<?= $x ?>&search=<?= $search ?>" 
+                       class="w-10 h-10 flex items-center justify-center rounded-xl text-[10px] font-black transition-all <?= ($halaman == $x) ? 'bg-indigo-600 text-white' : 'glass-card text-gray-500 hover:text-white' ?>">
+                        <?= $x ?>
+                    </a>
+                <?php endfor; ?>
                 <?php if ($halaman < $total_halaman): ?>
                     <a href="?halaman=<?= $halaman + 1 ?>&search=<?= $search ?>" class="px-4 py-2 glass-card rounded-xl text-[10px] font-black uppercase hover:bg-indigo-600 transition-all italic">Next</a>
                 <?php endif; ?>
             </div>
             <?php endif; ?>
-
-            <p class="text-center text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-6">
-                Showing <?= mysqli_num_rows($pembeli) ?> of <?= $total_data ?> Records
-            </p>
         </main>
     </div>
 
-    <div id="modalBackdrop" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+    <div id="modalUser" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="glass-card w-full max-w-lg rounded-[2.5rem] p-10 relative z-10 shadow-2xl border border-white/20">
+            <h2 id="modalTitle" class="text-3xl font-black italic uppercase mb-8 text-indigo-400 tracking-tighter">Edit Pembeli</h2>
+            <form id="formUser" action="<?= BASE_URL ?>/controllers/PembeliController.php" method="POST" class="space-y-6 text-white">
+                <input type="hidden" name="id" id="userId">
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1 block mb-2">Username</label>
+                        <input type="text" name="username" id="userName" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1 block mb-2">NIK</label>
+                        <input type="text" name="nik" id="userNik" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1 block mb-2">Email Address</label>
+                        <input type="email" name="email" id="userEmail" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1 block mb-2">Password (Kosongkan jika tidak diubah)</label>
+                        <input type="password" name="password" id="userPassword" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-indigo-500 transition-all" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1 block mb-2">Alamat</label>
+                        <textarea name="alamat" id="userAlamat" rows="3" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-indigo-500 transition-all"></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-10">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-4 glass-card hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all text-white">Cancel</button>
+                    <button type="submit" name="update_pembeli" id="btnSubmit" class="flex-[2] py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-900/40 text-white">Confirm</button>
+                </div>
+            </form>
         </div>
+    </div>
 
     <script>
-        // Script JS Anda (openTambah, openEdit, openDetail, closeModal) tetap sama
-        const backdrop = document.getElementById('modalBackdrop');
-        const modals = { t: document.getElementById('modalTambah'), e: document.getElementById('modalEdit'), d: document.getElementById('modalDetail') };
+        const modal = document.getElementById('modalUser');
+        const modalTitle = document.getElementById('modalTitle');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const form = document.getElementById('formUser');
 
-        function openTambah() { backdrop.classList.remove('hidden'); modals.t.classList.remove('hidden'); }
-        function openEdit(d) {
-            document.getElementById('edit_id').value = d.id;
-            document.getElementById('edit_nik').value = d.nik || '';
-            document.getElementById('edit_username').value = d.username;
-            document.getElementById('edit_email').value = d.email;
-            document.getElementById('edit_alamat').value = d.alamat;
-            backdrop.classList.remove('hidden'); modals.e.classList.remove('hidden');
+        function openEdit(data) {
+            modalTitle.innerText = "Edit Customer Profile";
+            btnSubmit.name = "update_pembeli";
+            btnSubmit.style.display = "block";
+            enableInputs(true);
+            document.getElementById('userId').value = data.id;
+            document.getElementById('userName').value = data.username;
+            document.getElementById('userNik').value = data.nik || '';
+            document.getElementById('userEmail').value = data.email;
+            document.getElementById('userAlamat').value = data.alamat;
+            modal.classList.remove('hidden');
         }
-        function openDetail(d) {
-            document.getElementById('d_nik').innerText = d.nik || 'Not Set';
-            document.getElementById('d_nama').innerText = d.username;
-            document.getElementById('d_email').innerText = d.email;
-            document.getElementById('d_alamat').innerText = d.alamat;
-            backdrop.classList.remove('hidden'); modals.d.classList.remove('hidden');
+
+        function openDetail(data) {
+            modalTitle.innerText = "Customer Intel Detail";
+            btnSubmit.style.display = "none";
+            document.getElementById('userName').value = data.username;
+            document.getElementById('userNik').value = data.nik || 'N/A';
+            document.getElementById('userEmail').value = data.email;
+            document.getElementById('userAlamat').value = data.alamat;
+            enableInputs(false);
+            modal.classList.remove('hidden');
         }
-        function closeModal() {
-            backdrop.classList.add('hidden');
-            Object.values(modals).forEach(m => m.classList.add('hidden'));
+
+        function openTambah() {
+            modalTitle.innerText = "Add New Customer";
+            form.reset();
+            document.getElementById('userId').value = '';
+            btnSubmit.name = "tambah_pembeli";
+            btnSubmit.style.display = "block";
+            enableInputs(true);
+            modal.classList.remove('hidden');
         }
-        backdrop.onclick = (e) => { if (e.target === backdrop) closeModal(); }
+
+        function closeModal() { modal.classList.add('hidden'); }
+        function enableInputs(status) {
+            const inputs = form.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                if (status) { input.removeAttribute('readonly'); input.classList.remove('opacity-50'); }
+                else { input.setAttribute('readonly', true); input.classList.add('opacity-50'); }
+            });
+        }
     </script>
 </body>
 </html>

@@ -26,69 +26,119 @@ $total = 0;
 
 <head>
     <meta charset="UTF-8">
-    <title>Keranjang Belanja - Liquid Glass</title>
+    <title>Keranjang Belanja | Glass Amber Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-20px, 30px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
         body {
-            background: linear-gradient(135deg, #064e3b 0%, #022c22 50%, #78350f 100%);
-            background-attachment: fixed;
+            background: #020617;
             color: white;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .liquid-bg {
+            position: fixed;
+            z-index: -1;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+
+        .blob {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            filter: blur(90px);
+            border-radius: 50%;
+            opacity: 0.12;
+            animation: float 18s infinite alternate;
         }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .qty-btn {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .qty-btn:hover {
-            background: rgba(16, 185, 129, 0.3);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #f59e0b;
+            transform: scale(1.1);
+        }
+
+        .btn-checkout {
+            background: linear-gradient(to right, #f59e0b, #d97706);
+            box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
         }
     </style>
 </head>
 
-<body class="min-h-screen">
+<body class="antialiased pb-20">
+
+    <div class="liquid-bg">
+        <div class="blob" style="top: 10%; right: 10%; background: #f59e0b;"></div>
+        <div class="blob" style="bottom: 10%; left: 5%; animation-delay: -5s; background: #10b981;"></div>
+    </div>
 
     <div class="flex min-h-screen">
 
-        <?php include '../../partials/sidebar-pembeli.php'; ?>
+        <aside class="w-64 fixed inset-y-0 left-0 z-50 border-r border-white/10 bg-white/5 backdrop-blur-2xl hidden md:block">
+            <?php include '../../partials/sidebar-pembeli.php'; ?>
+        </aside>
 
-        <main class="flex-1 p-8">
-            <header class="mb-10">
-                <h1 class="text-3xl font-black tracking-tight">
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-amber-400">
-                        Keranjang Belanja
-                    </span>
+        <main class="flex-1 p-8 lg:p-12 md:ml-64">
+            <header class="mb-16">
+                <h1 class="text-5xl font-black italic uppercase tracking-tighter leading-none">
+                    Shopping <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-emerald-400">Cart</span>
                 </h1>
-                <p class="text-emerald-100/50 mt-1 italic text-sm">Tinjau item pilihan Anda sebelum melakukan pembayaran.</p>
+                <div class="h-1 w-20 bg-amber-500 rounded-full mt-4"></div>
+                <p class="text-gray-500 mt-6 font-bold uppercase tracking-[0.3em] text-[10px]">Tinjau Item Pilihan Sebelum Checkout</p>
             </header>
 
             <?php if (mysqli_num_rows($keranjang) === 0): ?>
-                <div class="glass-card p-12 rounded-[2rem] text-center">
-                    <div class="text-6xl mb-4 text-emerald-100/10 italic font-black uppercase tracking-widest">Kosong</div>
-                    <p class="text-emerald-100/50">Keranjang kamu masih kosong.</p>
-                    <a href="../produk/index.php" class="mt-6 inline-block text-emerald-400 hover:text-emerald-300 font-bold tracking-widest text-xs uppercase underline">Mulai Belanja →</a>
+                <div class="glass-card p-20 rounded-[3.5rem] text-center border-dashed border-2 border-white/5">
+                    <div class="text-8xl mb-6 opacity-10 italic font-black uppercase tracking-widest select-none">Void</div>
+                    <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">Keranjang Anda Masih Kosong</p>
+                    <a href="../produk/index.php" class="mt-10 inline-flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-amber-400 font-black tracking-widest text-[10px] uppercase hover:bg-white/10 transition-all">
+                        Mulai Jelajah Produk →
+                    </a>
                 </div>
             <?php else: ?>
 
-                <div class="glass-card rounded-[2rem] overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 border-b border-white/10 uppercase text-xs tracking-widest text-emerald-400 font-bold">
-                            <tr>
-                                <th class="p-5">Produk</th>
-                                <th class="p-5">Harga</th>
-                                <th class="p-5 text-center">Qty</th>
-                                <th class="p-5">Subtotal</th>
-                                <th class="p-5 text-center">Aksi</th>
+                <div class="glass-card rounded-[3rem] overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white/5 border-b border-white/10">
+                                <th class="p-8 font-black text-amber-500 text-[10px] uppercase tracking-[0.2em]">Product Details</th>
+                                <th class="p-8 font-black text-amber-500 text-[10px] uppercase tracking-[0.2em]">Unit Price</th>
+                                <th class="p-8 font-black text-amber-500 text-[10px] uppercase tracking-[0.2em] text-center">Quantity</th>
+                                <th class="p-8 font-black text-amber-500 text-[10px] uppercase tracking-[0.2em]">Subtotal</th>
+                                <th class="p-8 font-black text-amber-500 text-[10px] uppercase tracking-[0.2em] text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5">
@@ -96,38 +146,45 @@ $total = 0;
                                 $subtotal = $row['harga'] * $row['qty'];
                                 $total += $subtotal;
                             ?>
-                                <tr class="hover:bg-white/5 transition-all duration-300">
-                                    <td class="p-5 flex items-center gap-4">
-                                        <?php if ($row['foto']): ?>
-                                            <img src="<?= BASE_URL ?>/public/uploads/produk/<?= $row['foto'] ?>"
-                                                class="w-20 h-20 object-cover rounded-2xl border border-white/10">
-                                        <?php else: ?>
-                                            <div class="w-20 h-20 bg-emerald-900/30 rounded-2xl flex items-center justify-center text-emerald-100/20 text-xs">No Pic</div>
-                                        <?php endif ?>
+                                <tr class="hover:bg-white/5 transition-all duration-300 group">
+                                    <td class="p-8 flex items-center gap-6">
+                                        <div class="relative w-24 h-24 flex-shrink-0">
+                                            <div class="absolute -inset-2 bg-amber-500/10 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                                            <?php if ($row['foto']): ?>
+                                                <img src="<?= BASE_URL ?>/public/uploads/produk/<?= $row['foto'] ?>"
+                                                    class="relative w-full h-full object-cover rounded-2xl border border-white/10 shadow-2xl">
+                                            <?php else: ?>
+                                                <div class="relative w-full h-full bg-black/40 rounded-2xl flex items-center justify-center text-[10px] uppercase font-black text-gray-700 italic border border-white/10">No Pic</div>
+                                            <?php endif ?>
+                                        </div>
                                         <div>
-                                            <p class="font-bold text-emerald-50"><?= htmlspecialchars($row['nama']) ?></p>
-                                            <p class="text-xs text-emerald-100/40 mt-1">Penjual: <?= htmlspecialchars($row['penjual']) ?></p>
+                                            <p class="font-black italic uppercase text-lg text-white tracking-tighter"><?= htmlspecialchars($row['nama']) ?></p>
+                                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Merchant: <?= htmlspecialchars($row['penjual']) ?></p>
                                         </div>
                                     </td>
-                                    <td class="p-5 text-emerald-100/70 font-medium">Rp <?= number_format($row['harga']) ?></td>
-                                    <td class="p-5">
-                                        <div class="flex items-center justify-center gap-3">
+                                    <td class="p-8">
+                                        <span class="text-xs font-bold text-gray-400">Rp <?= number_format($row['harga']) ?></span>
+                                    </td>
+                                    <td class="p-8">
+                                        <div class="flex items-center justify-center gap-4">
                                             <button onclick="updateQty(<?= $row['keranjang_id'] ?>, -1, <?= $row['stok'] ?>)"
-                                                class="qty-btn w-8 h-8 rounded-lg flex items-center justify-center text-emerald-300">-</button>
+                                                class="qty-btn w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold">-</button>
 
-                                            <span id="qty-<?= $row['keranjang_id'] ?>" class="font-black text-emerald-50 min-w-[20px] text-center"><?= $row['qty'] ?></span>
+                                            <span id="qty-<?= $row['keranjang_id'] ?>" class="font-black italic text-xl text-white min-w-[30px] text-center"><?= $row['qty'] ?></span>
 
                                             <button onclick="updateQty(<?= $row['keranjang_id'] ?>, 1, <?= $row['stok'] ?>)"
-                                                class="qty-btn w-8 h-8 rounded-lg flex items-center justify-center text-emerald-300">+</button>
+                                                class="qty-btn w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold">+</button>
                                         </div>
                                     </td>
-                                    <td class="p-5 font-black text-amber-400 text-lg">Rp <?= number_format($subtotal) ?></td>
-                                    <td class="p-5 text-center">
+                                    <td class="p-8">
+                                        <span class="font-black text-amber-400 italic text-xl tracking-tighter">Rp <?= number_format($subtotal) ?></span>
+                                    </td>
+                                    <td class="p-8 text-center">
                                         <a href="hapus.php?id_item=<?= $row['keranjang_id'] ?>"
-                                            onclick="return confirm('Hapus dari keranjang?')"
-                                            class="text-red-400/60 hover:text-red-400 transition-colors">
-                                            <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            onclick="return confirm('Hapus item ini dari koleksi keranjang?')"
+                                            class="inline-flex p-3 bg-red-500/5 border border-red-500/10 text-red-500/40 hover:text-red-500 hover:bg-red-500/20 rounded-xl transition-all">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </a>
                                     </td>
@@ -137,28 +194,32 @@ $total = 0;
                     </table>
                 </div>
 
-                <div class="mt-8 flex flex-col md:flex-row justify-between items-center glass-card p-8 rounded-[2rem] gap-6">
+                <div class="mt-12 flex flex-col lg:flex-row justify-between items-center glass-card p-10 rounded-[3.5rem] gap-8 border-l-8 border-l-amber-500">
                     <div>
-                        <p class="text-emerald-100/40 text-xs uppercase tracking-widest font-bold mb-1">Total Estimasi Pembayaran</p>
-                        <p class="text-4xl font-black text-amber-400 leading-none">
-                            Rp <?= number_format($total) ?>
+                        <p class="text-gray-500 text-[10px] uppercase font-black tracking-[0.3em] mb-2 italic">Total Investment Amount</p>
+                        <p class="text-5xl font-black text-white italic tracking-tighter">
+                            <span class="text-amber-500">Rp</span> <?= number_format($total) ?>
                         </p>
                     </div>
 
-                    <div class="flex gap-4">
+                    <div class="flex flex-col sm:flex-row gap-5 w-full lg:w-auto">
                         <a href="../produk/index.php"
-                            class="px-8 py-4 bg-white/5 border border-white/10 text-emerald-100 rounded-2xl font-bold hover:bg-white/10 transition-all active:scale-95">
-                            Lanjut Belanja
+                            class="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all text-center">
+                            Continue Browsing
                         </a>
                         <a href="../checkout/index.php"
-                            class="px-10 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-2xl font-black shadow-lg shadow-emerald-900/40 transition-all active:scale-95 flex items-center gap-2">
-                            CHECKOUT
+                            class="btn-checkout px-12 py-5 text-white rounded-[1.5rem] font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-3">
+                            Proceed to Checkout
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </a>
                     </div>
                 </div>
+
+                <footer class="mt-20 text-center">
+                    <p class="text-[9px] text-gray-600 font-black uppercase tracking-[0.5em]">Digital Cart Integrity Secured</p>
+                </footer>
 
             <?php endif; ?>
 
@@ -166,13 +227,11 @@ $total = 0;
     </div>
 
     <script>
-        // Logic JavaScript (sama seperti sebelumnya)
         function updateQty(idItem, delta, stokMax = 999) {
             const qtyElement = document.getElementById(`qty-${idItem}`);
             if (!qtyElement) return;
 
             let currentQty = parseInt(qtyElement.innerText.trim());
-            if (isNaN(currentQty)) currentQty = 1;
             let newQty = currentQty + delta;
 
             if (newQty < 1) {
@@ -183,9 +242,12 @@ $total = 0;
             }
 
             if (delta > 0 && newQty > stokMax) {
-                alert('Maaf, stok tidak mencukupi. Maksimal pembelian adalah ' + stokMax);
+                alert('Stok limit reached. Maksimal: ' + stokMax);
                 return;
             }
+
+            // Tampilkan efek loading sederhana (opsional)
+            qtyElement.style.opacity = "0.3";
 
             fetch('update-qty.php', {
                     method: 'POST',
@@ -194,23 +256,18 @@ $total = 0;
                     },
                     body: `id_item=${encodeURIComponent(idItem)}&qty=${encodeURIComponent(newQty)}`
                 })
-                .then(async response => {
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText || 'Server Error');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         location.reload();
                     } else {
-                        alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem'));
+                        alert('Gagal: ' + (data.message || 'Error'));
+                        qtyElement.style.opacity = "1";
                     }
                 })
-                .catch(error => {
-                    console.error('Debug Error:', error);
-                    alert('Kesalahan Koneksi ke Server.');
+                .catch(() => {
+                    alert('Server Error');
+                    qtyElement.style.opacity = "1";
                 });
         }
     </script>
